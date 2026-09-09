@@ -54,7 +54,8 @@ KAKAO_SVG = ('<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
              '5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>')
 
 NAV = [("/#about", "소개"), ("/#credentials", "자격 · 면허"), ("/#payouts", "지급 내역"),
-       ("/#services", "업무 분야"), ("/blog/", "공식 블로그"), ("/#faq", "자주 묻는 질문")]
+       ("/#reviews", "상담 후기"), ("/#services", "업무 분야"), ("/blog/", "공식 블로그"),
+       ("/#faq", "자주 묻는 질문")]
 
 
 def header():
@@ -176,6 +177,34 @@ def payouts_section():
 </section>'''
 
 
+# ---------------------------------------------------------------- 상담 후기
+def reviews_section():
+    R = jload("data", "reviews.json")
+    cards = []
+    for r in R["items"]:
+        stars = ('<span class="st">%s<i>%s</i></span>'
+                 % ("★" * r["star"], "★" * (5 - r["star"])))
+        text = "<br>".join(E(t) for t in r["text"].split("\n"))
+        cards.append('<figure class="rv"><div class="rv-h">%s<span class="tp">%s</span></div>'
+                     '<blockquote>%s</blockquote>'
+                     '<figcaption>%s<span class="wh">%s</span></figcaption></figure>'
+                     % (stars, E(r["topic"]), text, E(r["who"]), E(r["when"])))
+    return f'''<section id="reviews">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">상담 후기</div>
+      <h2>상담을 받으신 분들이 남긴 말입니다.</h2>
+      <p>네이버 엑스퍼트에 쌓인 후기 <b>{R["count"]}건</b> · 평점 <b>{R["rating"]} / 5.0</b>. 그중 일부를 손대지 않고 그대로 옮겼습니다.</p>
+    </div>
+    <div class="rv-grid" id="rvg">{''.join(cards)}</div>
+    <button class="rv-more" onclick="document.getElementById('rvg').classList.add('open');this.remove()">후기 더 보기</button>
+    <p class="rv-note">{E(R["note"])} 전체 후기는
+      <a href="{R["source_url"]}" target="_blank" rel="noopener nofollow">{E(R["source"])} 프로필</a>에서 직접 확인하실 수 있습니다.
+      후기는 상담을 받으신 분의 개인적인 소감이며, 사안마다 약관·가입 시점·의무기록이 달라 같은 결과를 보장하지 않습니다.</p>
+  </div>
+</section>'''
+
+
 # ---------------------------------------------------------------- 블로그
 def posts():
     ps = jload("data", "posts.json")
@@ -293,6 +322,7 @@ def home(ps):
              load("parts", "services.html"),
              payouts_section(),
              load("parts", "cases.html"),
+             reviews_section(),
              blog_latest_section(ps),
              load("parts", "process.html"),
              load("parts", "faq.html"),

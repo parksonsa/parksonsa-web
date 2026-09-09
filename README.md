@@ -5,7 +5,7 @@
 | 폴더 | 내용 |
 |---|---|
 | `public/` | **실제로 인터넷에 올라가는 완성된 사이트.** Cloudflare Pages가 이 폴더만 봅니다. |
-| `data/` | 사이트 설정(`site.json`), 지급 내역(`payouts.json`), 블로그 글(`posts.json`) |
+| `data/` | 사이트 설정(`site.json`), 지급 내역(`payouts.json`), 상담 후기(`reviews.json`), 블로그 글(`posts.json`) |
 | `parts/` | 메인 페이지 각 섹션의 내용 |
 | `assets/` | 사진·자격증·지급내역서 이미지, 공통 스타일 |
 | `scripts/build.py` | `data` + `parts` → `public` 생성 |
@@ -72,6 +72,7 @@ cd public && python3 -m http.server 8000   # http://localhost:8000
 ## 주의
 
 - `public/` 은 자동으로 만들어지는 폴더입니다. 직접 고치지 마세요 (다음 실행 때 지워집니다).
+- 상담 후기를 더하거나 빼려면 `data/reviews.json` 의 `items` 를 고치면 됩니다. 후기는 고객이 쓴 그대로만 넣습니다.
 - 글을 홈페이지에서 빼고 싶으면 `data/posts.json` 에서 해당 글 항목을 지우면 됩니다.
 - 지역 키워드(부산·울산·대구·창원 등)가 제목에 있는 글은 자동으로 제외됩니다.
 - 가져온 글 중 "판례·승소·무조건" 같은 표현이 있으면 동기화 로그에 ⚠ 로 표시됩니다. 확인 후 다듬으세요.
