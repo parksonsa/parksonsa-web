@@ -1,0 +1,18 @@
+{
+  "domain": "https://parksonsa.com",
+  "name": "박성일 손해사정사",
+  "tagline": "전국 상담",
+  "tel": "010-2754-1552",
+  "kakao": "https://open.kakao.com/o/siiGRjfe",
+  "email": "parksonsa08@gmail.com",
+  "office": "손해사정 다함 소장",
+  "naver_verify": "",
+  "google_verify": "",
+  "form_endpoint": "",
+  "blogs": [
+    {"name": "박손사의 보상 전문센터", "url": "https://blog.naver.com/park_sonsa"},
+    {"name": "보험금 지급기준 연구소", "url": "https://blog.naver.com/park-sonsa"}
+  ],
+  "cats": ["질병 · 진단비", "상해 · 후유장해", "교통사고", "배상책임", "보험계약 · 기타"],
+  "cat_slugs": ["diagnosis", "disability", "traffic", "liability", "contract"]
+}
