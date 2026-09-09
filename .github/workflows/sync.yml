@@ -1,0 +1,56 @@
+name: 블로그 동기화 및 사이트 생성
+
+on:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '가져올 범위'
+        required: true
+        default: 'recent'
+        type: choice
+        options: [recent, all]
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: site-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 네이버 블로그에서 새 글 가져오기
+        if: github.event_name != 'push'
+        run: |
+          if [ "${{ inputs.mode }}" = "all" ]; then
+            python3 scripts/sync_naver.py --all
+          else
+            python3 scripts/sync_naver.py
+          fi
+
+      - name: 사이트 생성
+        run: python3 scripts/build.py
+
+      - name: 변경분 저장
+        run: |
+          git config user.name  "site-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "사이트 갱신 $(date -u +%Y-%m-%d)"
+            git push
+          fi
