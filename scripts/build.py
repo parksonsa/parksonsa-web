@@ -54,12 +54,14 @@ KAKAO_SVG = ('<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
              '5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>')
 
 NAV = [("/#about", "소개"), ("/#credentials", "자격 · 면허"), ("/#payouts", "지급 내역"),
-       ("/#reviews", "상담 후기"), ("/#services", "업무 분야"), ("/blog/", "공식 블로그"),
+       ("/#reviews", "상담 후기"), ("/#services", "업무 분야"), ("/blog/", "손해사정 칼럼"),
        ("/#faq", "자주 묻는 질문")]
 
 
 def header():
-    links = "".join('<a href="%s">%s</a>' % (u, t) for u, t in NAV)
+    nav = NAV if posts() else [x for x in NAV if x[0] != "/blog/"]
+    links = "".join('<a href="%s">%s</a>' % (u, t) for u, t in nav)
+    mlinks = "".join('<a href="%s">%s</a>' % (u, t) for u, t in nav)
     return f'''<header class="topbar">
   <div class="wrap">
     <a class="brand" href="/">{E(SITE["name"])} <small>{E(SITE["tagline"])}</small></a>
@@ -67,9 +69,23 @@ def header():
     <div class="topbtns">
       <a class="topcall ghost" href="tel:{SITE["tel"]}">{SITE["tel"]}</a>
       <a class="topcall" href="/#contact">상담 신청</a>
+      <button class="menubtn" id="menubtn" aria-label="전체 메뉴 열기" aria-expanded="false" aria-controls="mmenu">
+        <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">메뉴</span>
+      </button>
     </div>
   </div>
-</header>'''
+</header>
+<div class="mmenu" id="mmenu" hidden>
+  <div class="mm-top">
+    <span>전체 메뉴</span>
+    <button class="mm-x" id="mmclose" aria-label="메뉴 닫기">×</button>
+  </div>
+  <nav class="mm-links">{mlinks}</nav>
+  <div class="mm-cta">
+    <a class="mm-call" href="tel:{SITE["tel"]}">전화 상담 {SITE["tel"]}</a>
+    <a class="mm-form" href="/#contact">상담 신청하기</a>
+  </div>
+</div>'''
 
 
 def footer():
@@ -91,9 +107,14 @@ def footer():
 <script src="/assets/app.js" defer></script>'''
 
 
-def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None):
-    """완성된 HTML 한 페이지를 public/ 아래에 쓴다."""
-    canonical = DOMAIN + path
+def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
+         canonical_url=None):
+    """완성된 HTML 한 페이지를 public/ 아래에 쓴다.
+
+    canonical_url 을 주면 그 주소를 원문으로 지정한다. 네이버 블로그에서 가져온
+    글에 원문(네이버) 주소를 넣어, 검색엔진이 홈페이지 글을 중복으로 보지 않게 한다.
+    """
+    canonical = canonical_url or (DOMAIN + path)
     img = og_image or (DOMAIN + "/assets/img/photo/hero.jpg")
     verify = ""
     if SITE.get("naver_verify"):
@@ -125,7 +146,7 @@ def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None)
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="alternate" type="application/rss+xml" title="{E(SITE["name"])} 공식 블로그" href="/rss.xml">{ld}
+<link rel="alternate" type="application/rss+xml" title="{E(SITE["name"])} 손해사정 칼럼" href="/rss.xml">{ld}
 </head>
 <body>
 {header()}
@@ -177,6 +198,32 @@ def payouts_section():
 </section>'''
 
 
+# ---------------------------------------------------------------- 처리 사례
+def cases_section():
+    cs = jload("data", "cases.json")
+    cards = []
+    for c in cs:
+        note = ('<dt>참고</dt><dd class="also">%s</dd>' % E(c["note"])) if c.get("note") else ""
+        cards.append(
+            '<div class="case"><div class="case-top"><span class="cat">%s</span>'
+            '<span class="dt">%s</span></div><h3>%s</h3>'
+            '<dl><dt>보험사 주장</dt><dd>%s</dd><dt>쟁점</dt><dd>%s</dd>'
+            '<dt>검토 내용</dt><dd>%s</dd><dt>결과</dt><dd class="res">%s</dd>%s</dl></div>'
+            % (E(CATS[c["cat"]]), E(c["when"]), E(c["title"]), E(c["claim"]),
+               E(c["issue"]), E(c["review"]), E(c["result"]), note))
+    return f'''<section id="cases" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">처리 사례</div>
+      <h2>결과보다 먼저, 어떤 논리로 뒤집었는지를 보여드립니다.</h2>
+      <p>보험사가 무엇을 근거로 거절했고, 그에 대해 무엇을 다시 확인했는지를 그대로 적었습니다. 비슷한 통보를 받으셨다면 참고가 되실 겁니다.</p>
+    </div>
+    <div class="grid g2">{''.join(cards)}</div>
+    <p class="pay-note">위 사례는 실제 처리한 건을 개인 식별정보 없이 정리한 것입니다. 사안마다 약관·가입 시점·의무기록이 다르므로 개별 사안의 결과를 보장하지 않으며, 검토 결과 실익이 없다고 판단되면 그대로 말씀드립니다.</p>
+  </div>
+</section>'''
+
+
 # ---------------------------------------------------------------- 상담 후기
 def reviews_section():
     R = jload("data", "reviews.json")
@@ -206,10 +253,94 @@ def reviews_section():
 
 
 # ---------------------------------------------------------------- 블로그
+def md_body(src):
+    """data/posts/*.md 본문을 아주 단순한 규칙으로 HTML 로 바꾼다."""
+    out, ul = [], []
+
+    def flush():
+        if ul:
+            out.append("<ul>%s</ul>" % "".join("<li>%s</li>" % x for x in ul))
+            ul.clear()
+
+    def inline(t):
+        t = E(t)
+        t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+        return re.sub(r"\[(.+?)\]\((\S+?)\)", r'<a href="\2">\1</a>', t)
+
+    for block in re.split(r"\n\s*\n", src.strip()):
+        block = block.strip()
+        if not block:
+            continue
+        if block.startswith("### "):
+            flush(); out.append("<h3>%s</h3>" % inline(block[4:].strip())); continue
+        if block.startswith("## "):
+            flush(); out.append("<h2>%s</h2>" % inline(block[3:].strip())); continue
+        m = re.fullmatch(r"!\[([^\]]*)\]\((\S+)\)", block)
+        if m:
+            flush()
+            out.append('<img src="%s" alt="%s" loading="lazy">' % (E(m.group(2)), E(m.group(1))))
+            continue
+        if block.startswith("- "):
+            for line in block.split("\n"):
+                if line.strip().startswith("- "):
+                    ul.append(inline(line.strip()[2:]))
+            flush(); continue
+        flush()
+        out.append("<p>%s</p>" % "<br>".join(inline(l) for l in block.split("\n")))
+    flush()
+    return "\n".join(out)
+
+
+def local_posts():
+    """홈페이지에 먼저 쓴 글. data/posts/<주소이름>.md 한 편에 한 파일."""
+    d = os.path.join(ROOT, "data", "posts")
+    if not os.path.isdir(d):
+        return []
+    out = []
+    for name in sorted(os.listdir(d)):
+        if not name.endswith(".md") or name.startswith(("_", ".")):
+            continue  # _ 로 시작하는 파일은 견본으로 보고 홈페이지에 올리지 않는다
+        raw = open(os.path.join(d, name), encoding="utf-8").read()
+        head, _, body = raw.partition("\n---")
+        meta = {}
+        for line in head.strip().splitlines():
+            if ":" in line:
+                k, _, v = line.partition(":")
+                meta[k.strip()] = v.strip()
+        title = meta.get("제목", "").strip()
+        if not title:
+            print("  ! %s — '제목:' 이 없어 건너뜁니다" % name)
+            continue
+        cat = 0
+        want = meta.get("분야", "").strip()
+        for i, c in enumerate(CATS):
+            if want and (want == c or want in c or c in want):
+                cat = i
+                break
+        html_body = md_body(body)
+        plain = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html_body)).strip()
+        img = re.search(r'<img src="([^"]+)"', html_body)
+        out.append({"id": name[:-3], "date": meta.get("날짜", "").strip() or
+                    datetime.now(KST).strftime("%Y-%m-%d"),
+                    "title": title,
+                    "summary": meta.get("요약", "").strip() or (plain[:150].rstrip() + "…"),
+                    "body": html_body, "image": img.group(1) if img else "",
+                    "cat": cat, "example": False, "origin": "home", "source": ""})
+    return out
+
+
+_POSTS = None
+
+
 def posts():
-    ps = jload("data", "posts.json")
-    ps.sort(key=lambda p: p["date"], reverse=True)
-    return ps
+    global _POSTS
+    if _POSTS is None:
+        ps = jload("data", "posts.json")
+        have = {p["id"] for p in ps}
+        ps += [p for p in local_posts() if p["id"] not in have]
+        ps.sort(key=lambda p: p["date"], reverse=True)
+        _POSTS = ps
+    return _POSTS
 
 
 def post_url(p):
@@ -225,20 +356,20 @@ def post_card(p):
 
 
 def blog_latest_section(ps):
-    ex = any(p.get("example") for p in ps)
-    note = ('<div class="note"><b>※ 아래 글은 화면 확인용 예시입니다.</b> 블로그 이관이 끝나면 실제 글 전체가 '
-            '이 자리에 들어가고, 새 글은 매일 자동으로 추가됩니다.</div>') if ex else ""
+    if not ps:
+        return ""   # 칼럼이 한 편도 없으면 섹션 자체를 내보내지 않는다
+    note = ""
     cards = "".join(post_card(p) for p in ps[:6])
     return f'''<section id="blog-latest">
   <div class="wrap">
     <div class="sec-head">
-      <div class="eyebrow">공식 블로그</div>
+      <div class="eyebrow">손해사정 칼럼</div>
       <h2>진단코드 하나, 장해율 1%가 갈리는 지점을 기록합니다.</h2>
-      <p>보험사 심사 실무와 손해사정 현장에서 정리한 글입니다. 비슷한 진단명이나 통보를 받으셨다면 먼저 읽어보세요.</p>
+      <p>보험사 심사 실무와 손해사정 현장에서 직접 정리한 글입니다. 비슷한 진단명이나 통보를 받으셨다면 먼저 읽어보세요.</p>
     </div>
     {note}
     <div class="grid g3">{cards}</div>
-    <div class="blog-more"><a class="btn btn-line" href="/blog/">전체 글 보기</a></div>
+    <div class="blog-more"><a class="btn btn-line" href="/blog/">칼럼 전체 보기</a></div>
   </div>
 </section>'''
 
@@ -263,13 +394,13 @@ def blog_list_page(cat=None):
           '<div class="empty">이 분야의 글은 이관 후 채워집니다.</div>'
     body = f'''<main><section class="listpage">
   <div class="wrap">
-    <div class="blog-head"><div><div class="eyebrow">공식 블로그</div><h1>{E(heading)}</h1>
+    <div class="blog-head"><div><div class="eyebrow">손해사정 칼럼</div><h1>{E(heading)}</h1>
       <p>손해사정 실무에서 정리한 글을 분야별로 모았습니다.</p></div></div>
     {chips(cat)}
     {lst}
   </div>
 </section></main>'''
-    title = "%s | %s 공식 블로그" % (heading, SITE["name"])
+    title = "%s | %s 손해사정 칼럼" % (heading, SITE["name"])
     desc = "%s 관련 손해사정 실무 글 %d편. 약관 기준과 진단코드, 장해분류표 적용을 정리했습니다." % (heading, len(sel))
     return page(path, title, desc, body)
 
@@ -282,9 +413,19 @@ BODY_CTA = '''<div class="cta">
 </div>'''
 
 
+def is_mirror(p):
+    """네이버 블로그에 먼저 올린 글의 사본인가. (홈페이지에 먼저 쓴 글은 origin='home')"""
+    return bool(p.get("source")) and p.get("origin") != "home"
+
+
 def post_page(p, prev, nxt):
     body_html = p.get("body") or (
         '<p>%s</p><div class="ph">이 자리에는 블로그 원문이 사진과 함께 그대로 들어갑니다.</div>' % E(p["summary"]))
+    origin_note = ""
+    if is_mirror(p):
+        origin_note = ('<p class="origin">이 글은 네이버 블로그 <b>박성일손해사정사의 보험금 지급솔루션</b>에 '
+                       '먼저 올린 글을 옮겨 실은 것입니다. '
+                       '<a href="%s" target="_blank" rel="noopener">원문 보기</a></p>' % E(p["source"]))
     nav = '<div class="nav">'
     nav += ('<a href="%s"><small>이전 글</small>%s</a>' % (post_url(prev), E(prev["title"]))) if prev else "<span></span>"
     if nxt:
@@ -294,6 +435,7 @@ def post_page(p, prev, nxt):
   <a class="back" href="/blog/">← 목록으로</a>
   <div class="meta"><span class="cat">{E(CATS[p["cat"]])}</span><span>{p["date"].replace("-", ".")}</span><span>{E(SITE["name"])}</span></div>
   <h1>{E(p["title"])}</h1>
+  {origin_note}
   <div class="body">{body_html}</div>
   {BODY_CTA.format(tel=SITE["tel"], kakao=SITE["kakao"], svg=KAKAO_SVG)}
   {nav}
@@ -305,12 +447,13 @@ def post_page(p, prev, nxt):
           "author": {"@type": "Person", "name": SITE["name"],
                      "jobTitle": "손해사정사", "url": DOMAIN + "/#about"},
           "publisher": {"@type": "Organization", "name": SITE["name"], "url": DOMAIN},
-          "mainEntityOfPage": DOMAIN + post_url(p),
+          "mainEntityOfPage": p["source"] if is_mirror(p) else DOMAIN + post_url(p),
           "articleSection": CATS[p["cat"]]}
     if img:
         ld["image"] = img
     return page(post_url(p), "%s | %s" % (p["title"], SITE["name"]), p["summary"],
-                body, og_image=img, jsonld=ld, published=p["date"])
+                body, og_image=img, jsonld=ld, published=p["date"],
+                canonical_url=p["source"] if is_mirror(p) else None)
 
 
 # ---------------------------------------------------------------- 메인
@@ -321,7 +464,7 @@ def home(ps):
              load("parts", "credentials.html"),
              load("parts", "services.html"),
              payouts_section(),
-             load("parts", "cases.html"),
+             cases_section(),
              reviews_section(),
              blog_latest_section(ps),
              load("parts", "process.html"),
@@ -355,7 +498,11 @@ def extras(urls, ps):
     now = datetime.now(KST)
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemap.org/schemas/sitemap/0.9">'.replace("sitemap.org", "sitemaps.org")]
+    # 네이버 원문을 canonical 로 지정한 사본 글은 사이트맵에서 뺀다.
+    mirrored = {post_url(p) for p in ps if is_mirror(p)}
     for u in urls:
+        if u in mirrored:
+            continue
         pri = "1.0" if u == "/" else ("0.8" if u.startswith("/blog") and u.count("/") == 2 else "0.7")
         sm.append("<url><loc>%s%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>"
                   % (DOMAIN, u, now.strftime("%Y-%m-%d"), pri))
@@ -370,7 +517,7 @@ def extras(urls, ps):
                      % (E(p["title"]), DOMAIN, post_url(p), DOMAIN, post_url(p),
                         d.strftime("%a, %d %b %Y %H:%M:%S +0900"), E(p["summary"])))
     write("rss.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>'
-          '<title>%s 공식 블로그</title><link>%s/blog/</link>'
+          '<title>%s 손해사정 칼럼</title><link>%s/blog/</link>'
           '<description>손해사정 실무에서 정리한 보험금 지급 기준</description><language>ko</language>%s'
           '</channel></rss>' % (E(SITE["name"]), DOMAIN, "".join(items)))
     write("_headers", "/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n")
@@ -389,6 +536,18 @@ def write(rel, text):
 
 
 APP_JS = '''document.addEventListener('DOMContentLoaded',function(){
+var mb=document.getElementById('menubtn'),mm=document.getElementById('mmenu'),
+    mx=document.getElementById('mmclose');
+if(mb&&mm){
+  var open=function(){mm.hidden=false;document.body.style.overflow='hidden';
+    mb.setAttribute('aria-expanded','true');};
+  var close=function(){mm.hidden=true;document.body.style.overflow='';
+    mb.setAttribute('aria-expanded','false');};
+  mb.addEventListener('click',open);
+  if(mx){mx.addEventListener('click',close);}
+  mm.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!mm.hidden){close();}});
+}
 var f=document.getElementById('cform');
 if(f&&!f.getAttribute('action')){f.addEventListener('submit',function(e){e.preventDefault();
 document.getElementById('fmsg').hidden=false;});}
@@ -407,11 +566,14 @@ def main():
     shutil.copytree(os.path.join(ROOT, "assets"), os.path.join(OUT, "assets"))
     write("assets/app.js", APP_JS)
     ps = posts()
-    urls = [home(ps), blog_list_page(None)]
-    for i in range(len(CATS)):
-        urls.append(blog_list_page(i))
-    for n, p in enumerate(ps):
-        urls.append(post_page(p, ps[n + 1] if n + 1 < len(ps) else None, ps[n - 1] if n else None))
+    urls = [home(ps)]
+    if ps:
+        urls.append(blog_list_page(None))
+        for i in range(len(CATS)):
+            if any(p["cat"] == i for p in ps):
+                urls.append(blog_list_page(i))
+        for n, p in enumerate(ps):
+            urls.append(post_page(p, ps[n + 1] if n + 1 < len(ps) else None, ps[n - 1] if n else None))
     extras(urls, ps)
     print("생성 완료: %d 페이지, 글 %d편 → public/" % (len(urls), len(ps)))
 
