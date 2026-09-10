@@ -247,8 +247,8 @@ def reviews_section():
         text = "<br>".join(E(t) for t in r["text"].split("\n"))
         cards.append('<figure class="rv"><div class="rv-h">%s<span class="tp">%s</span></div>'
                      '<blockquote>%s</blockquote>'
-                     '<figcaption>%s<span class="wh">%s</span></figcaption></figure>'
-                     % (stars, E(r["topic"]), text, E(r["who"]), E(r["when"])))
+                     '<figcaption>%s</figcaption></figure>'
+                     % (stars, E(r["topic"]), text, E(r["who"])))
     return f'''<section id="reviews">
   <div class="wrap">
     <div class="sec-head">

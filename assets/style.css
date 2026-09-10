@@ -332,7 +332,7 @@ footer .fcopy{margin-top:22px;padding-top:18px;border-top:1px solid var(--dark-l
         background:var(--navy-soft);border-radius:99px;padding:4px 10px;white-space:nowrap}
 .rv blockquote{margin:0;font-size:.94rem;line-height:1.75;color:var(--text)}
 .rv figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-2);
-               display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-3)}
+               font-size:.78rem;color:var(--text-3)}
 .rv figcaption .wh{color:var(--text-3)}
 .rv-note{margin-top:22px;font-size:.86rem;color:var(--text-3);max-width:60em;line-height:1.7}
 .rv-note a{color:var(--navy);text-decoration:underline;text-underline-offset:3px}
