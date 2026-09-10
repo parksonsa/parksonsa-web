@@ -356,14 +356,31 @@ footer .fcopy{margin-top:22px;padding-top:18px;border-top:1px solid var(--dark-l
 .article .origin a{color:var(--navy);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 
 /* ---------------------------------------------------- 모바일 전체 메뉴 */
-.menubtn{display:flex;align-items:center;gap:7px;background:var(--surface);color:var(--ink);
-  border:1px solid var(--line);border-radius:6px;padding:8px 12px;cursor:pointer;
-  font:inherit;font-weight:700;font-size:.9rem;line-height:1}
-.menubtn .bars{display:flex;flex-direction:column;justify-content:center;gap:4px;width:17px}
-.menubtn .bars i{display:block;height:2px;background:var(--navy);border-radius:2px}
-.menubtn:hover{background:var(--surface-2)}
-@media (min-width:1150px){.menubtn{display:none}}
+/* 메뉴 버튼은 옆의 '상담 신청' 버튼과 같은 모양으로 맞춰 한 세트로 보이게 한다 */
+.menubtn{display:none;align-items:center;gap:9px;cursor:pointer;font:inherit;line-height:1;
+  background:var(--navy);color:#fff;border:1px solid var(--navy);border-radius:6px;
+  padding:10px 16px;font-weight:700;font-size:.95rem;letter-spacing:.02em}
+.menubtn .bars{display:flex;flex-direction:column;justify-content:center;gap:4px;width:18px;flex:none}
+.menubtn .bars i{display:block;height:2px;background:currentColor;border-radius:2px}
+.menubtn:hover{background:var(--navy-2);border-color:var(--navy-2)}
+.menubtn:active{transform:translateY(1px)}
+:root[data-theme="dark"] .menubtn{color:var(--dark)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .menubtn{color:var(--dark)}}
 
+/* 좁은 화면 : 메뉴 버튼만 두고 전화번호·상담신청 버튼은 감춘다
+   (상담 신청은 메뉴 안과 화면 하단 고정 바에 크게 들어 있다) */
+@media (max-width:1149px){
+  .menubtn{display:flex}
+  .topbtns .topcall,
+  .topbtns .topcall.ghost{display:none}
+}
+@media (max-width:400px){
+  .topbar .wrap{padding:0 14px;gap:8px}
+  .brand{font-size:1rem}
+  .brand small{display:none}
+}
+
+/* 펼쳐지는 전체 메뉴 판 */
 .mmenu[hidden]{display:none !important}
 .mmenu{position:fixed;inset:0;z-index:120;background:var(--surface);
   display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -375,7 +392,7 @@ footer .fcopy{margin-top:22px;padding-top:18px;border-top:1px solid var(--dark-l
 .mm-links{display:flex;flex-direction:column;padding:8px 0;flex:1}
 .mm-links a{padding:19px 24px;font-size:1.16rem;font-weight:700;color:var(--ink);
   text-decoration:none;border-bottom:1px solid var(--line-2);display:flex;align-items:center}
-.mm-links a::after{content:"›";margin-left:auto;color:var(--text-3);font-weight:400;font-size:1.5rem;line-height:1}
+.mm-links a::after{content:"\203A";margin-left:auto;color:var(--text-3);font-weight:400;font-size:1.5rem;line-height:1}
 .mm-links a:active{background:var(--surface-2)}
 .mm-cta{display:grid;gap:10px;padding:22px 24px 32px;background:var(--surface-2);
   border-top:1px solid var(--line-2)}
@@ -387,46 +404,8 @@ footer .fcopy{margin-top:22px;padding-top:18px;border-top:1px solid var(--dark-l
 :root[data-theme="dark"] .mm-form{color:var(--dark)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mm-form{color:var(--dark)}}
 
-@media (max-width:520px){
-  .topbar .wrap{padding:0 14px;gap:8px}
-  .brand{font-size:1rem}
-  .brand small{display:none}
-  .topbtns{gap:6px}
-  .topcall{padding:9px 11px;font-size:.88rem}
-  .menubtn{padding:8px 10px}
-}
-@media (max-width:374px){.menubtn .lbl{display:none}}
-
 .case dd.also{font-size:.86rem;color:var(--text-3);border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
 .case dl{align-content:start}
-
-/* 모바일 상단: 메뉴 버튼을 주 버튼으로, 상담 신청 버튼은 뺀다
-   (상담 신청은 메뉴 안과 화면 하단 고정 바에 크게 들어 있다) */
-@media (max-width:1149px){
-  .topbtns .topcall{display:none}
-  .menubtn{background:var(--navy);color:#fff;border-color:var(--navy);
-    padding:11px 16px;font-size:.98rem;gap:9px}
-  .menubtn .bars{width:19px}
-  .menubtn .bars i{background:#fff;height:2.5px}
-  .menubtn:hover{background:var(--navy-2)}
-  .menubtn .lbl{display:inline}
-  .brand small{display:inline}
-}
-@media (max-width:400px){
-  .topbar .wrap{padding:0 14px}
-  .brand{font-size:1rem}
-  .brand small{display:none}
-}
-:root[data-theme="dark"] .menubtn{color:var(--dark)}
-:root[data-theme="dark"] .menubtn .bars i{background:var(--dark)}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .menubtn{color:var(--dark)}
-  :root:not([data-theme="light"]) .menubtn .bars i{background:var(--dark)}
-}
-@media (min-width:1150px){
-  .menubtn{display:none !important}
-  .topbtns .topcall{display:inline-block}
-}
 
 /* 목록 접기 — 처음에는 일부만 보이고 버튼으로 펼친다 */
 .grid.cut9:not(.open) > .pay:nth-child(n+10){display:none}

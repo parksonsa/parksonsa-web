@@ -39,6 +39,16 @@ DOMAIN = SITE["domain"].rstrip("/")
 E = html.escape
 
 
+def asset_v(rel):
+    """파일이 바뀌면 주소도 바뀌게 해서 브라우저가 옛 파일을 쓰지 않게 한다."""
+    import hashlib
+    try:
+        h = hashlib.md5(open(os.path.join(ROOT, rel), "rb").read()).hexdigest()[:8]
+    except OSError:
+        return ""
+    return "?v=" + h
+
+
 def won(v):
     return f"{v:,}원"
 
@@ -89,6 +99,7 @@ def header():
 
 
 def footer():
+    V_APP = APP_V[0]
     blogs = "".join('<a href="%s" target="_blank" rel="noopener">블로그 · %s</a>'
                     % (b["url"], E(b["name"])) for b in SITE["blogs"])
     return f'''<footer>
@@ -104,7 +115,7 @@ def footer():
   <a class="sb-kko" href="{SITE["kakao"]}" target="_blank" rel="noopener">{KAKAO_SVG}카톡상담</a>
 </div>
 <div class="lb" id="lb" role="dialog" aria-label="이미지 크게 보기"><button class="x" aria-label="닫기">×</button><img alt=""></div>
-<script src="/assets/app.js" defer></script>'''
+<script src="/assets/app.js{V_APP}" defer></script>'''
 
 
 def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
@@ -144,7 +155,7 @@ def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css{asset_v("assets/style.css")}">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate" type="application/rss+xml" title="{E(SITE["name"])} 손해사정 칼럼" href="/rss.xml">{ld}
 </head>
@@ -563,12 +574,17 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){lb.classLis
 });'''
 
 
+APP_V = [""]
+
+
 def main():
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     os.makedirs(OUT)
     shutil.copytree(os.path.join(ROOT, "assets"), os.path.join(OUT, "assets"))
     write("assets/app.js", APP_JS)
+    import hashlib
+    APP_V[0] = "?v=" + hashlib.md5(APP_JS.encode()).hexdigest()[:8]
     ps = posts()
     urls = [home(ps)]
     if ps:
