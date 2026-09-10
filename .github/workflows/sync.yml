@@ -1,18 +1,20 @@
-name: 블로그 동기화 및 사이트 생성
+name: 사이트 생성
+
+# data/posts/ 에 글을 올리거나 내용을 고쳐 커밋하면 사이트를 다시 만든다.
+# 네이버 블로그 자동 복제는 쓰지 않는다. (홈페이지가 원본이 되도록)
+# 필요하면 아래 '네이버 가져오기'를 손으로 실행할 수 있다 — 평소에는 쓰지 않는다.
 
 on:
-  schedule:
-    - cron: '0 20 * * *'
-  workflow_dispatch:
-    inputs:
-      mode:
-        description: '가져올 범위'
-        required: true
-        default: 'recent'
-        type: choice
-        options: [recent, all]
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      naver:
+        description: '네이버 블로그에서 가져오기 (평소에는 no)'
+        required: true
+        default: 'no'
+        type: choice
+        options: [no, recent, all]
 
 permissions:
   contents: write
@@ -33,10 +35,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: 네이버 블로그에서 새 글 가져오기
-        if: github.event_name != 'push'
+      - name: 네이버 가져오기 (직접 실행했을 때만)
+        if: github.event_name == 'workflow_dispatch' && inputs.naver != 'no'
         run: |
-          if [ "${{ inputs.mode }}" = "all" ]; then
+          if [ "${{ inputs.naver }}" = "all" ]; then
             python3 scripts/sync_naver.py --all
           else
             python3 scripts/sync_naver.py
