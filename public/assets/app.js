@@ -14,6 +14,8 @@ if(mb&&mm){
 var f=document.getElementById('cform');
 if(f&&!f.getAttribute('action')){f.addEventListener('submit',function(e){e.preventDefault();
 document.getElementById('fmsg').hidden=false;});}
+document.querySelectorAll('.more-btn').forEach(function(b){b.addEventListener('click',function(){
+document.getElementById(b.getAttribute('data-for')).classList.add('open');b.remove();});});
 var lb=document.getElementById('lb'),lbi=lb.querySelector('img');
 document.querySelectorAll('[data-full]').forEach(function(el){el.addEventListener('click',function(){
 lbi.src=el.getAttribute('data-full');lb.classList.add('open');});});
