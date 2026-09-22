@@ -325,9 +325,10 @@ def local_posts():
             print("  ! %s — '제목:' 이 없어 건너뜁니다" % name)
             continue
         cat = 0
-        want = meta.get("분야", "").strip()
+        norm = lambda t: re.sub(r"[\s·ㆍ・.,/]", "", t)   # 띄어쓰기·가운뎃점 차이는 무시
+        want = norm(meta.get("분야", ""))
         for i, c in enumerate(CATS):
-            if want and (want == c or want in c or c in want):
+            if want and (want == norm(c) or want in norm(c) or norm(c) in want):
                 cat = i
                 break
         html_body = md_body(body)
