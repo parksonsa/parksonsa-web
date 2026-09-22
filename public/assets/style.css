@@ -222,6 +222,9 @@ button[type=submit]{font-family:var(--sans);font-weight:700;font-size:1.05rem;co
 button[type=submit]:hover{filter:brightness(1.1)}
 button[type=submit]:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .formmsg{font-size:.92rem;color:var(--navy);font-weight:500}
+.formmsg.ok{color:#1F6B45;background:#EAF5EE;border:1px solid #BFDCCB;padding:12px 14px;border-radius:10px}
+.formmsg.err{color:#9A3A2E;background:#FBEDEA;border:1px solid #EBC7C0;padding:12px 14px;border-radius:10px}
+#cform button:disabled{opacity:.6;cursor:wait}
 
 /* footer */
 footer{background:var(--dark-2);color:var(--on-dark-2);padding:40px 0;border-top:1px solid var(--dark-line);font-size:.92rem}
