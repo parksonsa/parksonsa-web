@@ -8,7 +8,7 @@
  "office": "손해사정 다함 소장",
  "naver_verify": "64f5a2b6ea83cfc8c974727027dbd45b3a1082b1",
  "google_verify": "WW6nH0u2CXvoV4y-_2VNeiglB7ze1e0XeHSDeOWgx5Q",
- "form_endpoint": "",
+ "form_endpoint": "https://formspree.io/f/xnpndlpz",
  "blogs": [
   {
    "name": "박성일손해사정사의 보험금 지급솔루션",
