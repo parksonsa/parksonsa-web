@@ -63,9 +63,9 @@ KAKAO_SVG = ('<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
              '<path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7L5.8 21l4.3-2.7c.6.1 1.2.1 1.9.1 '
              '5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>')
 
-NAV = [("/#about", "소개"), ("/#credentials", "자격 · 면허"), ("/#payouts", "지급 내역"),
-       ("/#reviews", "상담 후기"), ("/#services", "업무 분야"), ("/blog/", "손해사정 칼럼"),
-       ("/#faq", "자주 묻는 질문")]
+NAV = [("/about/", "소개"), ("/about/#credentials", "자격 · 면허"), ("/cases/", "지급 내역"),
+       ("/reviews/", "상담 후기"), ("/about/#services", "업무 분야"), ("/blog/", "손해사정 칼럼"),
+       ("/contact/#faq", "자주 묻는 질문")]
 
 
 def header():
@@ -78,7 +78,7 @@ def header():
     <nav class="navlinks">{links}</nav>
     <div class="topbtns">
       <a class="topcall ghost" href="tel:{SITE["tel"]}">{SITE["tel"]}</a>
-      <a class="topcall" href="/#contact">상담 신청</a>
+      <a class="topcall" href="/contact/">상담 신청</a>
       <button class="menubtn" id="menubtn" aria-label="전체 메뉴 열기" aria-expanded="false" aria-controls="mmenu">
         <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">메뉴</span>
       </button>
@@ -93,7 +93,7 @@ def header():
   <nav class="mm-links">{mlinks}</nav>
   <div class="mm-cta">
     <a class="mm-call" href="tel:{SITE["tel"]}">전화 상담 {SITE["tel"]}</a>
-    <a class="mm-form" href="/#contact">상담 신청하기</a>
+    <a class="mm-form" href="/contact/">상담 신청하기</a>
   </div>
 </div>'''
 
@@ -135,6 +135,9 @@ def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
     ld = '\n<script type="application/ld+json">%s</script>' % json.dumps(
         jsonld, ensure_ascii=False) if jsonld else ""
     pub = '\n<meta property="article:published_time" content="%s">' % published if published else ""
+    if SITE.get("form_endpoint"):
+        body = body.replace('<form id="cform">',
+                            '<form id="cform" action="%s" method="POST">' % SITE["form_endpoint"])
     doc = f'''<!doctype html>
 <html lang="ko">
 <head>
@@ -379,7 +382,7 @@ def blog_latest_section(ps):
     <div class="sec-head">
       <div class="eyebrow">손해사정 칼럼</div>
       <h2>진단코드 하나, 장해율 1%가 갈리는 지점을 기록합니다.</h2>
-      <p>보험사 심사 실무와 손해사정 현장에서 직접 정리한 글입니다. 비슷한 진단명이나 통보를 받으셨다면 먼저 읽어보세요.</p>
+      <p>보험사 계열 심사 실무와 손해사정 현장에서 직접 정리한 글입니다. 비슷한 진단명이나 통보를 받으셨다면 먼저 읽어보세요.</p>
     </div>
     {note}
     <div class="grid g3">{cards}</div>
@@ -485,14 +488,11 @@ def home(ps):
              blog_latest_section(ps),            # 11. 더 읽을거리
              load("parts", "contact.html")]      # 12. 연락
     body = "<main>%s</main>" % "\n".join(parts)
-    if SITE.get("form_endpoint"):
-        body = body.replace('<form id="cform">',
-                            '<form id="cform" action="%s" method="POST">' % SITE["form_endpoint"])
     ld = {"@context": "https://schema.org", "@type": "ProfessionalService",
           "name": SITE["name"], "url": DOMAIN,
           "telephone": "+82-" + SITE["tel"].lstrip("0").replace("-", "-", 1),
           "areaServed": {"@type": "Country", "name": "대한민국"},
-          "description": "보험사 심사 실무 출신 손해사정사. 질병·진단비, 상해·후유장해, 교통사고, 배상책임, 보험계약 분쟁의 삭감·면책 사유를 약관과 의무기록으로 재검토합니다.",
+          "description": "교보생명·KB손해보험 계열에서 현장심사 및 단체보험 심사를 했던 손해사정사. 질병·진단비, 상해·후유장해, 교통사고, 배상책임, 보험계약 분쟁의 삭감·면책 사유를 약관과 의무기록으로 재검토합니다.",
           "founder": {"@type": "Person", "name": "박성일", "jobTitle": "손해사정사",
                       "hasCredential": ["손해사정사(신체)", "임상병리사", "개인보험심사역"]},
           "image": DOMAIN + "/assets/img/photo/hero.jpg"}
@@ -502,9 +502,56 @@ def home(ps):
         faq["mainEntity"].append({"@type": "Question", "name": re.sub(r"<[^>]+>", "", m.group(1)).strip(),
                                   "acceptedAnswer": {"@type": "Answer",
                                                      "text": re.sub(r"<[^>]+>", "", m.group(2)).strip()}})
-    return page("/", "박성일 손해사정사 | 보험금 삭감·면책 재검토, 전국 상담",
-                "보험사 심사 실무 출신 손해사정사가 약관과 의무기록을 기준으로 삭감·면책 사유를 처음부터 다시 검토합니다. 상담 무료, 착수금 없는 후불 보수, 전국 상담.",
+    return page("/", "박성일 손해사정사 | 손해사정사 무료 상담 · 보험금 삭감·면책 재검토",
+                HOME_DESC,
                 body, jsonld=[ld, faq])
+
+
+HOME_DESC = ("교보생명·KB손해보험 계열에서 현장심사 및 단체보험 심사를 했던 손해사정사가 직접 상담합니다. "
+             "진단비·후유장해·교통사고 보험금 삭감·면책을 약관과 의무기록으로 다시 검토합니다. "
+             "상담 무료, 착수금 없는 후불 보수, 전국 상담.")
+
+
+# ---------------------------------------------------------------- 하위 페이지
+# 메뉴 항목을 각각 독립된 주소로 두어, 검색 결과에 바로가기 링크가 붙을 수 있게 한다.
+def sub_page(path, eyebrow, h1, lead, title, desc, sections, cta=True):
+    head = f'''<section class="subhead"><div class="wrap"><div class="blog-head"><div>
+  <div class="eyebrow">{E(eyebrow)}</div><h1>{E(h1)}</h1><p>{E(lead)}</p></div></div></div></section>'''
+    body = "<main class=\"sub\">%s\n%s\n%s</main>" % (head, "\n".join(sections), SUB_CTA if cta else "")
+    return page(path, title, desc, body)
+
+
+SUB_CTA = '''<section class="sub-cta"><div class="wrap"><div class="cta">
+  <div><b>지금 받은 통보, 근거부터 확인해 보세요.</b><p>상담은 무료이며, 가능성이 낮으면 낮다고 말씀드립니다.</p></div>
+  <div class="cta-btns"><a class="btn btn-navy" href="/contact/">상담 신청</a><a class="btn btn-line" href="tel:{{TEL}}">전화 {{TEL}}</a></div>
+</div></div></section>'''
+
+
+def sub_pages():
+    global SUB_CTA
+    SUB_CTA = SUB_CTA.replace("{{TEL}}", SITE["tel"])
+    out = []
+    out.append(sub_page("/about/", "소개", "박성일 손해사정사",
+        "교보생명·KB손해보험 계열에서 심사 실무를 한 손해사정사이자 임상병리사입니다.",
+        "손해사정사 소개 | 박성일 손해사정사",
+        "교보생명·KB손해보험 계열 현장심사·단체보험 심사 경력, 손해사정사(신체)·임상병리사·개인보험심사역 자격을 갖춘 박성일 손해사정사를 소개합니다.",
+        [load("parts", "about.html"), load("parts", "credentials.html"), load("parts", "services.html")]))
+    out.append(sub_page("/cases/", "지급 내역 · 처리 사례", "실제로 받아낸 보험금",
+        "보험사 지급내역서와 처리 과정을 개인정보 없이 공개합니다.",
+        "보험금 지급 내역 · 처리 사례 | 박성일 손해사정사",
+        "암진단비·뇌심혈관 진단비·후유장해·교통사고 합의금까지, 실제 처리한 건의 지급 내역과 보험사 주장·쟁점·결과를 정리했습니다.",
+        [payouts_section(), cases_section()]))
+    out.append(sub_page("/reviews/", "상담 후기", "의뢰인이 남긴 후기",
+        "네이버 엑스퍼트에 의뢰인이 직접 남긴 후기를 고치지 않고 옮겼습니다.",
+        "상담 후기 | 박성일 손해사정사",
+        "네이버 엑스퍼트에서 의뢰인이 직접 남긴 박성일 손해사정사 상담 후기입니다. 내용은 고치지 않고 그대로 옮겼습니다.",
+        [reviews_section()]))
+    out.append(sub_page("/contact/", "상담 신청", "손해사정사 무료 상담 신청",
+        "받으신 통보서와 상황을 남겨주시면 약관 기준으로 먼저 검토해 연락드립니다.",
+        "손해사정사 무료 상담 신청 | 박성일 손해사정사",
+        "진단비·후유장해·교통사고 보험금 삭감·면책 상담 신청. 상담 무료, 착수금 없는 후불 보수, 전국 상담. 전화·카카오톡·온라인 신청 모두 가능합니다.",
+        [load("parts", "contact.html"), load("parts", "process.html"), load("parts", "faq.html")], cta=False))
+    return out
 
 
 # ---------------------------------------------------------------- 부가 파일
@@ -594,7 +641,7 @@ def main():
     import hashlib
     APP_V[0] = "?v=" + hashlib.md5(APP_JS.encode()).hexdigest()[:8]
     ps = posts()
-    urls = [home(ps)]
+    urls = [home(ps)] + sub_pages()
     if ps:
         urls.append(blog_list_page(None))
         for i in range(len(CATS)):
