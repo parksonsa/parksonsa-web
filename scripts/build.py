@@ -118,6 +118,24 @@ def footer():
 <script src="/assets/app.js{V_APP}" defer></script>'''
 
 
+def tracking():
+    """광고 성과 추적 스크립트. site.json 의 naver_wa(네이버 공통키), ga4_id 가 있을 때만 넣는다.
+    전환(전화·카톡·상담폼) 신호는 app.js 의 trk() 가 보낸다."""
+    out = ""
+    if SITE.get("naver_wa"):
+        out += '''
+<script src="//wcs.naver.net/wcslog.js"></script>
+<script>if(!wcs_add)var wcs_add={};wcs_add["wa"]="%s";if(!_nasa)var _nasa={};
+if(window.wcs){if(wcs.inflow){wcs.inflow("%s");}wcs_do(_nasa);}</script>''' % (
+            SITE["naver_wa"], DOMAIN.split("//")[-1])
+    if SITE.get("ga4_id"):
+        out += '''
+<script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());gtag('config','%s');</script>''' % (SITE["ga4_id"], SITE["ga4_id"])
+    return out
+
+
 def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
          canonical_url=None):
     """완성된 HTML 한 페이지를 public/ 아래에 쓴다.
@@ -160,7 +178,7 @@ def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css{asset_v("assets/style.css")}">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="alternate" type="application/rss+xml" title="{E(SITE["name"])} 손해사정 칼럼" href="/rss.xml">{ld}
+<link rel="alternate" type="application/rss+xml" title="{E(SITE["name"])} 손해사정 칼럼" href="/rss.xml">{ld}{tracking()}
 </head>
 <body>
 {header()}
@@ -597,6 +615,20 @@ def write(rel, text):
 
 
 APP_JS = '''document.addEventListener('DOMContentLoaded',function(){
+var AS={};try{var q=new URLSearchParams(location.search);
+['n_media','n_query','n_rank','n_keyword','utm_source','utm_term'].forEach(function(k){if(q.get(k)){AS[k]=q.get(k);}});
+if(Object.keys(AS).length){sessionStorage.setItem('adsrc',JSON.stringify(AS));}
+else{AS=JSON.parse(sessionStorage.getItem('adsrc')||'{}');}}catch(e){}
+var TL={};
+function trk(kind){var n=Date.now();if(TL[kind]&&n-TL[kind]<10000){return;}TL[kind]=n;
+try{if(window.wcs){var c={};c.cnv=wcs.cnv(kind==='kakao'?'5':'4','1');wcs_do(c);}}catch(e){}
+if(window.gtag){gtag('event','generate_lead',{method:kind,ad_keyword:AS.n_query||AS.n_keyword||AS.utm_term||'(none)',
+ad_media:AS.n_media||AS.utm_source||'(organic)',ad_rank:AS.n_rank||''});}}
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(!a){return;}
+var h=a.getAttribute('href')||'';if(h.indexOf('tel:')===0){trk('phone');}
+else if(h.indexOf('open.kakao.com')>-1){trk('kakao');}},true);
+document.addEventListener('copy',function(){
+if(/010[- .]?[0-9]{4}[- .]?[0-9]{4}/.test(String(window.getSelection()||''))){trk('phone_copy');}});
 var mb=document.getElementById('menubtn'),mm=document.getElementById('mmenu'),
     mx=document.getElementById('mmclose');
 if(mb&&mm){
@@ -616,7 +648,7 @@ f.addEventListener('submit',function(e){e.preventDefault();var u=f.getAttribute(
 if(!u){say('현재 온라인 접수 준비 중입니다. 전화(010-2754-1552)나 카카오톡으로 연락해 주세요.',false);return;}
 fb.disabled=true;fb.textContent='접수 중…';
 fetch(u,{method:'POST',body:new FormData(f),headers:{'Accept':'application/json'}}).then(function(r){
-if(r.ok){f.reset();say('상담 신청이 접수되었습니다. 확인 후 남겨주신 연락처로 연락드리겠습니다.',true);}
+if(r.ok){f.reset();trk('form');say('상담 신청이 접수되었습니다. 확인 후 남겨주신 연락처로 연락드리겠습니다.',true);}
 else{throw 0;}}).catch(function(){say('접수 중 문제가 생겼습니다. 번거로우시겠지만 전화(010-2754-1552)나 카카오톡으로 연락해 주세요.',false);})
 .then(function(){fb.disabled=false;fb.textContent='상담 신청하기';});});}
 document.querySelectorAll('.more-btn').forEach(function(b){b.addEventListener('click',function(){
@@ -638,6 +670,9 @@ def main():
     os.makedirs(OUT)
     shutil.copytree(os.path.join(ROOT, "assets"), os.path.join(OUT, "assets"))
     write("assets/app.js", APP_JS)
+    # 광고 클릭 기록 함수(functions/_middleware.js)는 페이지 요청에만 돌린다 (이미지·CSS 제외)
+    write("_routes.json", json.dumps({"version": 1, "include": ["/*"],
+          "exclude": ["/assets/*", "/sitemap.xml", "/rss.xml", "/robots.txt"]}))
     import hashlib
     APP_V[0] = "?v=" + hashlib.md5(APP_JS.encode()).hexdigest()[:8]
     ps = posts()
