@@ -106,7 +106,7 @@ def footer():
   <div class="wrap">
     <div class="fbrand">{E(SITE["name"])}</div>
     <div class="frow"><span>{E(SITE["office"])}</span><span>상담문의 {SITE["tel"]}</span><span>전국 상담 가능</span></div>
-    <div class="frow"><a href="{SITE["kakao"]}" target="_blank" rel="noopener">카카오톡 오픈채팅</a>{blogs}</div>
+    <div class="frow"><a href="{SITE["kakao"]}" target="_blank" rel="noopener">카카오톡 오픈채팅</a>{blogs}<a href="/privacy/">개인정보 처리방침</a></div>
     <div class="fcopy">© {datetime.now(KST).year} {E(SITE["name"])}. 본 사이트의 지급 내역과 사례는 실제 처리 건을 식별정보 없이 정리한 것으로, 개별 사안의 결과를 보장하지 않습니다.</div>
   </div>
 </footer>
@@ -137,7 +137,7 @@ gtag('js',new Date());gtag('config','%s');</script>''' % (SITE["ga4_id"], SITE["
 
 
 def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
-         canonical_url=None):
+         canonical_url=None, noindex=False):
     """완성된 HTML 한 페이지를 public/ 아래에 쓴다.
 
     canonical_url 을 주면 그 주소를 원문으로 지정한다. 네이버 블로그에서 가져온
@@ -164,7 +164,7 @@ def page(path, title, desc, body, *, og_image=None, jsonld=None, published=None,
 <title>{E(title)}</title>
 <meta name="description" content="{E(desc)}">
 <link rel="canonical" href="{canonical}">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">{verify}
+<meta name="robots" content="{"noindex, follow" if noindex else "index, follow, max-image-preview:large, max-snippet:-1"}">{verify}
 <meta property="og:type" content="{'article' if published else 'website'}">
 <meta property="og:site_name" content="{E(SITE["name"])}">
 <meta property="og:title" content="{E(title)}">
@@ -572,6 +572,59 @@ def sub_pages():
     return out
 
 
+
+# ---------------------------------------------------------------- 개인정보 처리방침
+# 푸터에서만 연결하고, 검색엔진에는 노출하지 않는다(noindex · 사이트맵 제외).
+PRIVACY_HTML = '''<p>박성일 손해사정사(이하 "본 사이트")는 상담 신청과 광고 운영 과정에서 필요한 최소한의 개인정보만 처리하며, 개인정보 보호법 등 관련 법령을 지킵니다.</p>
+<h2>1. 처리하는 개인정보 항목</h2>
+<ul>
+<li><b>상담 신청</b> — 성함, 연락처, 상담 분야, 상담 내용 (상담 신청 폼에 직접 입력)</li>
+<li><b>광고 클릭 기록</b> — 네이버 검색광고를 눌러 접속한 경우에 한해 접속 IP, 접속 일시, 검색어·광고 매체 정보, 브라우저 정보 (자동 수집)</li>
+</ul>
+<h2>2. 처리 목적</h2>
+<ul>
+<li>상담 접수와 회신, 상담 진행</li>
+<li>광고 효과 측정, 무효·부정 클릭 확인과 차단</li>
+</ul>
+<h2>3. 보유 및 이용 기간</h2>
+<ul>
+<li><b>상담 신청 정보</b> — 상담 종료 후 3개월간 보관한 뒤 파기합니다.</li>
+<li><b>광고 클릭 기록</b> — 수집일로부터 90일이 지나면 자동으로 삭제됩니다.</li>
+</ul>
+<h2>4. 처리 위탁 및 국외 이전</h2>
+<p>원활한 서비스 운영을 위해 아래 업체에 처리를 위탁하며, 해당 업체의 서버가 국외에 있어 정보가 네트워크를 통해 국외로 전송됩니다.</p>
+<ul>
+<li><b>Formspree, Inc.</b> (미국) — 상담 신청 내용의 전송과 이메일 전달 · 이전 항목: 성함, 연락처, 상담 분야, 상담 내용 · 보유 기간: 위 3항의 기간</li>
+<li><b>Cloudflare, Inc.</b> (미국 등) — 웹사이트 운영과 광고 클릭 기록 저장 · 이전 항목: 접속 IP, 접속 일시, 검색어·광고 매체 정보, 브라우저 정보 · 보유 기간: 90일</li>
+</ul>
+<p>국외 이전을 원하지 않으시면 상담 신청 폼 대신 전화나 카카오톡으로 상담하실 수 있습니다.</p>
+<h2>5. 광고 성과 측정 도구</h2>
+<p>본 사이트는 광고 성과를 확인하기 위해 네이버 광고 전환 추적 등 측정 도구를 사용할 수 있으며, 이 과정에서 쿠키가 사용될 수 있습니다. 브라우저 설정에서 쿠키 저장을 거부하실 수 있고, 이 경우에도 사이트 이용과 상담에는 지장이 없습니다.</p>
+<h2>6. 제3자 제공</h2>
+<p>본 사이트는 정보주체의 동의가 있거나 법령에 근거가 있는 경우를 제외하고 개인정보를 제3자에게 제공하지 않습니다.</p>
+<h2>7. 파기 방법</h2>
+<p>보유 기간이 끝난 개인정보는 지체 없이 파기하며, 전자 파일은 복구할 수 없는 방법으로 삭제합니다.</p>
+<h2>8. 정보주체의 권리</h2>
+<p>언제든지 본인의 개인정보에 대해 열람, 정정, 삭제, 처리정지를 요구하실 수 있으며, 아래 연락처로 요청하시면 지체 없이 조치합니다.</p>
+<h2>9. 개인정보 보호책임자</h2>
+<ul>
+<li>성명: 박성일 손해사정사</li>
+<li>연락처: {tel} · {email}</li>
+</ul>
+<h2>10. 시행일</h2>
+<p>이 개인정보 처리방침은 2026년 10월 1일부터 적용됩니다.</p>'''
+
+
+def privacy_page():
+    body = f'''<main><section class="listpage"><div class="wrap"><article class="article">
+  <a class="back" href="/">← 홈으로</a>
+  <h1>개인정보 처리방침</h1>
+  <div class="body">{PRIVACY_HTML.format(tel=SITE["tel"], email=E(SITE["email"]))}</div>
+</article></div></section></main>'''
+    return page("/privacy/", "개인정보 처리방침 | %s" % SITE["name"],
+                "박성일 손해사정사 홈페이지의 개인정보 처리방침입니다.", body, noindex=True)
+
+
 # ---------------------------------------------------------------- 부가 파일
 def extras(urls, ps):
     now = datetime.now(KST)
@@ -677,6 +730,7 @@ def main():
     APP_V[0] = "?v=" + hashlib.md5(APP_JS.encode()).hexdigest()[:8]
     ps = posts()
     urls = [home(ps)] + sub_pages()
+    privacy_page()   # 사이트맵에는 넣지 않는다
     if ps:
         urls.append(blog_list_page(None))
         for i in range(len(CATS)):
