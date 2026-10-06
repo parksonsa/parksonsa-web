@@ -537,3 +537,11 @@ footer .fcopy{margin-top:22px;padding-top:18px;border-top:1px solid var(--dark-l
 .sub-cta .btn-navy{background:#fff;color:var(--navy);border-color:#fff}
 .sub-cta .btn-line{color:#fff;border-color:rgba(255,255,255,.45);background:transparent}
 @media (max-width:640px){.subhead{padding:36px 0 18px}.sub-cta .cta{padding:24px 20px}.sub-cta .cta-btns{width:100%}.sub-cta .cta-btns .btn{flex:1;justify-content:center}}
+/* 칼럼 본문 가독성: 문단·목록·이미지 사이 여백 */
+.article .body p+p{margin-top:26px}
+.article .body h2{margin:52px 0 16px}
+.article .body ul{margin:20px 0 26px;padding-left:1.2em}
+.article .body li+li{margin-top:10px}
+.article .body img{display:block;max-width:100%;height:auto;margin:30px auto;border-radius:10px}
+.article .body ul+p,.article .body img+p{margin-top:0}
+@media (max-width:640px){.article .body p+p{margin-top:22px}.article .body h2{margin:44px 0 14px}}
