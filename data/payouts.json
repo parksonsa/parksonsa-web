@@ -80,6 +80,20 @@
   ]
  },
  {
+  "kind": "진단비",
+  "title": "저등급 신경교종 → 일반암 진단비 (C71.9)",
+  "amount": 97204630,
+  "amount_note": "차액 9,700만 + 가산금 204,630원",
+  "context": "조직검사 저등급(low grade) 소견으로 소액암 처리 → 가입 당시 KCD 4차 기준 병리 의료자문으로 악성 입증 · 소액암 기지급분과의 차액 지급 · 2026.02",
+  "docs": [
+   {
+    "img": "c719a.jpg",
+    "label": "지급확인서",
+    "fit": "top"
+   }
+  ]
+ },
+ {
   "kind": "사망보험금",
   "title": "상해사망보험금",
   "amount": 70934586,
@@ -163,6 +177,20 @@
     "img": "w03.jpg",
     "label": "입금내역",
     "fit": "contain"
+   }
+  ]
+ },
+ {
+  "kind": "진단비",
+  "title": "난소경계성종양 → 일반암 진단비 (Borderline tumor)",
+  "amount": 50100000,
+  "amount_note": "",
+  "context": "조직검사 Borderline tumor 소견을 악성으로 정리 · 암진단비 5,000만 + 보험료납입면제 담보 10만 · 2026.10",
+  "docs": [
+   {
+    "img": "ovb50.jpg",
+    "label": "지급상세내역",
+    "fit": "top"
    }
   ]
  },
