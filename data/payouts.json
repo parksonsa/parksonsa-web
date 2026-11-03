@@ -537,6 +537,20 @@
  },
  {
   "kind": "진단비",
+  "title": "직장 관상융모선종 → 제자리암 진단비 (D12.8)",
+  "amount": 3900000,
+  "amount_note": "",
+  "context": "조직검사 'High-grade dysplasia' 소견으로 제자리암 인정 · 진단 300만 + 수술 90만",
+  "docs": [
+   {
+    "img": "d128k.jpg",
+    "label": "지급 안내",
+    "fit": "top"
+   }
+  ]
+ },
+ {
+  "kind": "진단비",
   "title": "상피내암(자궁) 입원·수술·진단급여",
   "amount": 1242433,
   "amount_note": "",
