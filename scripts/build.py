@@ -225,7 +225,7 @@ def payouts_section():
       <div><div class="l">지급 · 합의 합계</div><div class="v">{money_kr(total)}</div></div>
     </div>
     <div class="grid g3 cut9" id="payg">{''.join(cards)}</div>
-    <button class="more-btn" data-for="payg" data-full="{len(cases)}">지급 내역 전체 {len(cases)}건 보기</button>
+    <button class="more-btn" data-for="payg" data-count="{len(cases)}">지급 내역 전체 {len(cases)}건 보기</button>
     <p class="pay-note">위 금액은 공개한 내역서와 합의서에 적힌 지급액·합의금의 합계이며, 보험사가 지급을 결정하거나 당사자가 합의한 결과입니다. 사안마다 약관·가입 시점·의무기록이 다르므로 개별 사안의 결과를 보장하지 않습니다. 이미지를 누르면 크게 보실 수 있습니다.</p>
   </div>
 </section>'''
@@ -252,7 +252,7 @@ def cases_section():
       <p>보험사가 무엇을 근거로 거절했고, 그에 대해 무엇을 다시 확인했는지를 그대로 적었습니다. 비슷한 통보를 받으셨다면 참고가 되실 겁니다.</p>
     </div>
     <div class="grid g2 cut6" id="casg">{''.join(cards)}</div>
-    <button class="more-btn" data-for="casg" data-full="{len(cs)}">처리 사례 전체 {len(cs)}건 보기</button>
+    <button class="more-btn" data-for="casg" data-count="{len(cs)}">처리 사례 전체 {len(cs)}건 보기</button>
     <p class="pay-note">위 사례는 실제 처리한 건을 개인 식별정보 없이 정리한 것입니다. 사안마다 약관·가입 시점·의무기록이 다르므로 개별 사안의 결과를 보장하지 않으며, 검토 결과 실익이 없다고 판단되면 그대로 말씀드립니다.</p>
   </div>
 </section>'''
@@ -707,8 +707,9 @@ else{throw 0;}}).catch(function(){say('접수 중 문제가 생겼습니다. 번
 document.querySelectorAll('.more-btn').forEach(function(b){b.addEventListener('click',function(){
 document.getElementById(b.getAttribute('data-for')).classList.add('open');b.remove();});});
 var lb=document.getElementById('lb'),lbi=lb.querySelector('img');
-document.querySelectorAll('[data-full]').forEach(function(el){el.addEventListener('click',function(){
-lbi.src=el.getAttribute('data-full');lb.classList.add('open');});});
+document.querySelectorAll('[data-full]').forEach(function(el){var u=el.getAttribute('data-full')||'';
+if(el.classList.contains('more-btn')||u.charAt(0)!=='/')return;
+el.addEventListener('click',function(){lbi.src=u;lb.classList.add('open');});});
 lb.addEventListener('click',function(){lb.classList.remove('open');lbi.src='';});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){lb.classList.remove('open');}});
 });'''
