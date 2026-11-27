@@ -38,8 +38,9 @@ else{throw 0;}}).catch(function(){say('접수 중 문제가 생겼습니다. 번
 document.querySelectorAll('.more-btn').forEach(function(b){b.addEventListener('click',function(){
 document.getElementById(b.getAttribute('data-for')).classList.add('open');b.remove();});});
 var lb=document.getElementById('lb'),lbi=lb.querySelector('img');
-document.querySelectorAll('[data-full]').forEach(function(el){el.addEventListener('click',function(){
-lbi.src=el.getAttribute('data-full');lb.classList.add('open');});});
+document.querySelectorAll('[data-full]').forEach(function(el){var u=el.getAttribute('data-full')||'';
+if(el.classList.contains('more-btn')||u.charAt(0)!=='/')return;
+el.addEventListener('click',function(){lbi.src=u;lb.classList.add('open');});});
 lb.addEventListener('click',function(){lb.classList.remove('open');lbi.src='';});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){lb.classList.remove('open');}});
 });
